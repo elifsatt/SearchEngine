@@ -8,12 +8,16 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.elifsat.searchengine.dto.CustomSearchResponseDTO;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service("seacrhEngineService")
 public class SearchEngineServiceImpl implements ISearchEngineService {
@@ -33,7 +37,7 @@ public class SearchEngineServiceImpl implements ISearchEngineService {
 	public List<CustomSearchResponseDTO> seacrh(String key) throws Exception {
 		logger.info("search method begins. Key:" + key);
 		 
-		List<CustomSearchResponseDTO> dtos = new ArrayList<CustomSearchResponseDTO>();
+		List<CustomSearchResponseDTO> dtos =  null;
 		
 		try {
 			String searchKey = URLEncoder.encode(key, "UTF-8").replaceAll("\\+", "%20");
@@ -44,12 +48,40 @@ public class SearchEngineServiceImpl implements ISearchEngineService {
 			
 			logger.info(result);
 			
+			dtos = convertJson2Object(result);
+			
 		} catch (Exception e) {
 			logger.error(e, e);
 		}
 		
 		
 		logger.info("search method complated.");
+		return dtos;
+	}
+	
+	private List<CustomSearchResponseDTO> convertJson2Object(String resultJson){
+		logger.info("convertJson2Object method begins.");
+		List<CustomSearchResponseDTO> dtos = new ArrayList<CustomSearchResponseDTO>();
+		
+		try {
+			
+			ObjectMapper mapper = new ObjectMapper();
+			
+			JSONObject jsonObject = new JSONObject(resultJson);
+			
+			Object itemsJSONObj = jsonObject.get("items");
+			
+			if (StringUtils.isNotBlank(itemsJSONObj.toString())) {
+				dtos = mapper.readValue(itemsJSONObj.toString(), new TypeReference<List<CustomSearchResponseDTO>>(){});
+				
+				logger.info(dtos.toString());
+			}
+			
+		} catch (Exception e) {
+			logger.error(e,e);
+		}
+		
+		logger.info("convertJson2Object method begins.");
 		return dtos;
 	}
 
