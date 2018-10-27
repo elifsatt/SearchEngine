@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" name="searchEngine-service" packages="">
+	<Properties>  
+	   <property name="catalina.base">${sys:catalina.base:-${sys:user.dir}}</property>
+	   <!-- <property name="catalina.base">${sys:catalina.home}</property> -->
+	</Properties>
+	<Appenders>
+		<RollingFile name="searchEngineServiceFileAppender" fileName="${catalina.base}/logs/searchEngineService/searchEngineServiceApp.log" 
+		filePattern="${catalina.base}/logs/searchEngineService/rollingAll/searchEngineServiceApp-%d{yyyy-MM-dd}_%i.log.gz">
+			<PatternLayout>
+				<Pattern>%d{HH:mm:ss,SSS} %-5p: %c %t %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="250 MB" />
+				<!-- <TimeBasedTriggeringPolicy interval="1" modulate="true" /> -->
+			</Policies>
+		</RollingFile>
+		<RollingFile name="searchEngineServiceErrorFileAppender" fileName="${catalina.base}/logs/searchEngineService/searchEngineServiceApp_error.log" 
+		filePattern="${catalina.base}/logs/searchEngineService/rollingErrorAll/searchEngineServiceApp_error-%d{yyyy-MM-dd}_%i.log.gz">
+			<PatternLayout>
+				<Pattern>%d{HH:mm:ss,SSS} %-5p: %c %t %m%n</Pattern>
+			</PatternLayout>
+			<Policies>
+				<OnStartupTriggeringPolicy />
+				<SizeBasedTriggeringPolicy size="250 MB" />
+				<!-- <TimeBasedTriggeringPolicy interval="1" modulate="true" /> -->
+			</Policies>
+		</RollingFile>
+		<Console name="STDOUT" target="SYSTEM_OUT">
+			<PatternLayout>
+				<Pattern>%-5p | %d{yyyy-MM-dd HH:mm:ss.SSS} | (%F:%L) - %m%n</Pattern>
+			</PatternLayout>
+		</Console>
+	</Appenders>
+
+	<Loggers>
+		<logger name="org.hibernate" level="info" additivity="false">
+			<appender-ref ref="searchEngineServiceFileAppender" />
+			<appender-ref ref="searchEngineServiceErrorFileAppender" level="error" />
+			<appender-ref ref="STDOUT" />
+		</logger>
+		<logger name="org.springframework" level="info" additivity="false">
+			<appender-ref ref="searchEngineServiceFileAppender" />
+			<appender-ref ref="searchEngineServiceErrorFileAppender" level="error" />
+			<appender-ref ref="STDOUT" />
+		</logger>
+		<logger name="org.apache" level="info" additivity="false">
+			<appender-ref ref="searchEngineServiceFileAppender" />
+			<appender-ref ref="searchEngineServiceErrorFileAppender" level="error" />
+			<appender-ref ref="STDOUT" />
+		</logger>
+		<logger name="com.elifsat.searchengine" level="debug" additivity="false">
+			<appender-ref ref="searchEngineServiceFileAppender" />
+			<appender-ref ref="searchEngineServiceErrorFileAppender" level="error" />
+			<appender-ref ref="STDOUT" />
+		</logger>
+		<Root level="trace">
+			 <appender-ref ref="STDOUT" /> 
+		</Root>
+	</Loggers>
+	<!-- appender harici logların seviyesi root level ile belirlenir. Logger olmasa dahi AppenderRef seviyesinde uygulamanın loglari tutulur. Logger tanımlı ise en 
+		nihayetinde onun levelı ile log yazılacaktır. -->
+</Configuration>
