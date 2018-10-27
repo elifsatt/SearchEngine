@@ -5,7 +5,7 @@
 <title>Elif Şat</title>
 
 <link rel="stylesheet"
-	href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+	href="css/bootstrap.min.css">
 
 
 <style type="text/css">
@@ -23,36 +23,49 @@
 
 
 	<div class="container">
-		<div class="py-5 text-center">
+		<!--<div class="py-5 text-center">
 			<img class="d-block mx-auto mb-4"
-				src="sehitler-aniti.png"
+				src="images/sehitler-aniti.png"
 				alt="" width="72" height="72">
+			<h2>Search Engine</h2>
+		</div>-->
+		<div class="text-center">
 			<h2>Search Engine</h2>
 		</div>
 
 		<div class="row">
 			<div class="col-md-12 order-md-1">
-				<form  novalidate>
-					<div class="row">
-						<div class="col-md-6 mb-3">
-						</div>
-						<div class="col-md-6 mb-3"></div>
-					</div>
 
-					<div class="input-group mb-3">
-						<input type="text" class="form-control"
-							placeholder="seacrh"
-							aria-label="search" aria-describedby="basic-addon2">
-						<div class="input-group-append">
-							<span class="input-group-text" id="basic-addon2">E</span>
-						</div>
+				<div class="input-group mb-3">
+					<input type="text" id="searchInput" class="form-control"
+						placeholder="seacrh"
+						aria-label="search" aria-describedby="basic-addon2" >
+					<div class="input-group-append">
+						<span class="input-group-text" id="basic-addon2" onClick="searchCall()">E</span>
 					</div>
-				</form>
+				</div>
+				
+				<div class="row" id="error-message-div" style="display : none;">
+					<div class="alert alert-danger" role="alert">
+					  <span id="error-message">dss</span>
+					</div>
+				</div>
+				
+				<div class="row">
+					<div class="card" style="width: 100%;">
+					  <ul class="list-group list-group-flush" id="seacrhResult">
+					    
+					  </ul>
+					</div>
+				</div>
+
 			</div>
 		</div>
 
 	</div>
 	
+	
+	<div id="wait" style="display:none;width:69px;height:89px;border:1px solid black;position:absolute;top:50%;left:50%;padding:2px;"><img src='images/ajax_wait_loader.gif' width="64" height="64" /><br>Loading..</div>
 	
 		<footer class="my-5 pt-5 text-muted text-center text-small">
 			<p class="mb-1">&copy; 2018-2019 Bitirme Projesi</p>
@@ -61,15 +74,88 @@
 			</ul>
 		</footer>
 
+	
+
+	<script src="js/jquery-3.3.1.slim.min.js"></script>
+	<script src="js/jquery.js"></script>
+
+	<script src="js/jquery.blockUI.js"></script>
+	<script src="js/bootstrap.min.js"></script>
+		
 	<script>
+	
+		$( document ).ready(function() {
+			
+			 $(document).ajaxStop($.unblockUI); 
+
+			 /*$(document).ajaxStart(function(){
+		        $("#wait").css("display", "block");
+		      });
+	    	 $(document).ajaxComplete(function(){
+		        $("#wait").css("display", "none");
+		     });*/
+			    
+		});
+		
+		function searchCall(){
+			if($("#searchInput").val() && $.trim($("#searchInput").val())){
+				call($("#searchInput").val());
+			}
+		}
+
+		$("#searchInput").on("keyup", function(event){
+
+			 if (event.keyCode === 13) {
+					call($("#searchInput").val());
+			  }
+
+		});
+		
+		function call(key){
+			$("#seacrhResult").html("");
+			
+			console.log(key);
+			
+			$("#error-message-div").hide();
+			
+			$.blockUI({ message: '<h1><img src="images/ajax_wait_loader.gif" /> Please wait...</h1>' });
+			
+			$.ajax({
+				url: 'http://localhost:8060/seacrhengine/services/seacrhengine/search?key=' + key, 
+				type: 'GET',
+				cache: false,
+				success: function(result){
+					console.log(result);
+					
+					if(result.status){
+						var resultList = result.result;
+
+						append(resultList);
+					
+					} else {
+						$("#error-message-div").text(result.message);
+						$("#error-message-div").show();
+					}
+					
+		    	},
+		    	error(xhr,status,error){
+		    		
+		    	}
+			});
+		}
+		
+		function append(searchList){
+			for(var i = 0; i< searchList.length; i++){
+				var li = "<li class='list-group-item'>";
+				
+				li = li + "<a href='" + searchList[i].link  + "'>" + searchList[i].htmlSnippet + "</a>";
+				
+				li = li + '</li>';
+				$("#seacrhResult").append(li)
+			}
+		}
 		
 	</script>
-
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-	<script
-		src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
-	<script
-		src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
 </body>
 </html>
 
