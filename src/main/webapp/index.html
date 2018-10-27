@@ -86,64 +86,75 @@
 	
 		$( document ).ready(function() {
 			
+			/*
+			*Ajax çağrısı bittikten sonra ekrandaki bloklama kaldırılıyor
+			*/
 			 $(document).ajaxStop($.unblockUI); 
-
-			 /*$(document).ajaxStart(function(){
-		        $("#wait").css("display", "block");
-		      });
-	    	 $(document).ajaxComplete(function(){
-		        $("#wait").css("display", "none");
-		     });*/
-			    
 		});
 		
+		//Arama inputnunun yanında bulunann "E" butonuna tıklandığında çağrılan javascript fonksiyonu
 		function searchCall(){
+			//Butona basıldığına sadece input alanına text girilmişse işlem yapılması için kontrol yapılıyor.
 			if($("#searchInput").val() && $.trim($("#searchInput").val())){
+				//Ajax(Rest Call) çağrısının yapılacağı fonksiyon çağrılıyor.
 				call($("#searchInput").val());
 			}
 		}
 
+		//input text'e her değer girişinde çağrılan fonksiyon. Bu fonksiyon kullanıcı ENTER tuşuna bastığı zaman sorgu yapılabilmesi için yazıldı.
 		$("#searchInput").on("keyup", function(event){
 
+			//enter tuşuna mı basıldığını kontrolü
 			 if (event.keyCode === 13) {
-					call($("#searchInput").val());
+				 if($("#searchInput").val() && $.trim($("#searchInput").val())){
+					 call($("#searchInput").val()); 
+				 }
 			  }
 
 		});
 		
+		//Ajax çağrısı yapılacak fonksiyon
 		function call(key){
 			$("#seacrhResult").html("");
 			
-			console.log(key);
-			
+			//Daha önce hata mesajı gösterilmişse gizleniyor
 			$("#error-message-div").hide();
 			
+			//Ajax çağrısından önce ekran bloklanıyor
 			$.blockUI({ message: '<h1><img src="images/ajax_wait_loader.gif" /> Please wait...</h1>' });
 			
+			//Rest servis çağrısı yapılıyor.
 			$.ajax({
-				url: 'http://localhost:8060/seacrhengine/services/seacrhengine/search?key=' + key, 
+				url: 'services/seacrhengine/search?key=' + key, 
 				type: 'GET',
 				cache: false,
 				success: function(result){
 					console.log(result);
 					
+					//Servisten dönen cevap başarılı ise status true olacak.
 					if(result.status){
+						//Servisten gelen arama listesi alınıyor
 						var resultList = result.result;
 
+						//Arama listesi ekranda gösterilmesi için fonksiyon çağrısı yapılıyor.
 						append(resultList);
 					
 					} else {
+						//Servisten hata alınırsa alınan mesajı gösteriliyor
 						$("#error-message-div").text(result.message);
 						$("#error-message-div").show();
 					}
 					
 		    	},
 		    	error(xhr,status,error){
-		    		
+		    		//Servisten hata alınırsa alınan mesajı gösteriliyor
+					$("#error-message-div").text(result.message);
+					$("#error-message-div").show();
 		    	}
 			});
 		}
 		
+		//Arama sonuçları ekrana ekleniyor.
 		function append(searchList){
 			for(var i = 0; i< searchList.length; i++){
 				var li = "<li class='list-group-item'>";
