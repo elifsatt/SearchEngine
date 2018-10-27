@@ -32,7 +32,7 @@ public class SearchEngineServiceImpl implements ISearchEngineService {
 	@Override
 	public List<CustomSearchResponseDTO> seacrh(String key) throws Exception {
 		logger.info("search method begins. Key:" + key);
-		
+		 
 		List<CustomSearchResponseDTO> dtos = new ArrayList<CustomSearchResponseDTO>();
 		
 		try {
