@@ -62,10 +62,11 @@ public class SearchEngineRestService {
 			response.setStatus(false);
 			response.setMessage(e.getMessage());
 		}
-
+        //eğer hata ayıklama etkinse
 		if (logger.isDebugEnabled()) {
 			logger.debug("search REST method completed.");
 		}
+		//oluşturduğu yanıtı geri döndürme
 		return Response.ok(response).build();
 	}
 }
