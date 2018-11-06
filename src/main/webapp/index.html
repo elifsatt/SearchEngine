@@ -17,6 +17,20 @@
     height: 3em;
     margin-top: -3em;
 }
+
+.custom-card{
+    position: relative;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    min-width: 0;
+    word-wrap: break-word;
+    background-color: #fff;
+    background-clip: border-box;
+    
+    border-radius: .25rem;
+  }
 </style>
 </head>
 <body>
@@ -148,14 +162,44 @@
 		//Arama sonuçları ekrana ekleniyor.
 		function append(searchList){
 			for(var i = 0; i< searchList.length; i++){
-				var li = "<li class='list-group-item'>";
+				var li = "";
+				//"<li class='list-group-item'>";
 				
-				li = li + "<a href='" + searchList[i].link  + "'>" + searchList[i].htmlSnippet + "</a>";
-				
-				
-				li = li + "<span style='color: red; font-size: 20px; font-weight: bold;'> " + searchList[i].ratio + "</span>"
-				
-				li = li + '</li>';
+				li = li + "<div class='card'> " +
+							  "<div class='card-body'> " +
+							    "<h5 class='card-title'><a href='" + searchList[i].link  + "'>" + searchList[i].title + "</a></h5> " +
+							    "<h6 class='card-subtitle mb-2 text-muted'>" + searchList[i].link + "</h6> " +
+			    				"<div class='row'>";
+			    
+			    	li = li + "<form> " +
+			    				  "<div class='form-row'> " +
+			    				    "<div class='form-group col-md-2'> " ;
+			    				       if (searchList[i].pagemap != null && searchList[i].pagemap.cse_image != null && searchList[i].pagemap.cse_image.length > 0) {
+			    							li = li + "<img src='" +searchList[i].pagemap.cse_image[0].src+ "' alt='Smiley face' height='80' width='80'>";
+			    					 	}
+			    		 li = li + "</div> " +
+			    				    "<div class='form-group col-md-10'> " +
+			    				        "<p class='card-text'>" +searchList[i].htmlSnippet+ "</p> " +
+			    				    "</div> " +
+			    				  "</div> " +
+			    				 
+			    				   "<div class='form-row'> " +
+			    				    "<div class='form-group col-md-6'> " +
+			    				       "<span style='color: red; font-size: 20px; font-weight: bold;'> " + searchList[i].ratio + "%</span>" +
+			    				    "</div> " +
+			    				    "<div class='form-group col-md-6'> " +
+			    				       
+			    				    "</div> " +
+			    				  "</div> " +
+			    			  "</form> " ;
+			    				
+			    				
+			   		  li = li + "</div>"; //row
+			    	li = li + "</div>"; //card-body
+		    	li = li + "</div>"; //row
+			    
+			   
+			   	
 				$("#seacrhResult").append(li)
 			}
 		}

@@ -18,6 +18,8 @@ public class CustomSearchResponseDTO implements Serializable {
 	private String formattedUrl;
 	private String htmlFormattedUrl;
 	private long ratio;
+	
+	private PagemapDTO pagemap;
 
 	public String getTitle() {
 		return title;
@@ -91,6 +93,14 @@ public class CustomSearchResponseDTO implements Serializable {
 		this.ratio = l;
 	}
 
+	public PagemapDTO getPagemap() {
+		return pagemap;
+	}
+
+	public void setPagemap(PagemapDTO pagemap) {
+		this.pagemap = pagemap;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -103,6 +113,10 @@ public class CustomSearchResponseDTO implements Serializable {
 				.append("formattedUrl:").append(formattedUrl).append("\n")
 				.append("ratio:").append(ratio).append("\n")
 				.append("htmlFormattedUrl:").append(htmlFormattedUrl).append("\n\n\n");
+		
+		if (pagemap != null) {
+			builder.append("pagemap:").append(pagemap.toString());
+		}
 		
 		return builder.toString();
 	}

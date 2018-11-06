@@ -7,6 +7,7 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -57,9 +58,9 @@ public class SearchEngineServiceImpl implements ISearchEngineService {
 			
 			if (!CollectionUtils.isEmpty(dtos)) {
 				for (CustomSearchResponseDTO customSearchResponseDTO : dtos) {
-					double ratio = calculateSimilarityRatio(key, customSearchResponseDTO.getHtmlSnippet());
+					double ratio = calculateSimilarityRatio(key, customSearchResponseDTO.getTitle());
 					
-					customSearchResponseDTO.setRatio(Math.round(ratio * 100));
+					customSearchResponseDTO.setRatio((long)(ratio * 100));
 				}
 			}
 
@@ -142,20 +143,12 @@ public class SearchEngineServiceImpl implements ISearchEngineService {
 
 		double ratio = 0;
 
-		String longer = currentStr, shorter = targetStr;
-		if (currentStr.length() < targetStr.length()) { 
-			longer = targetStr;
-			shorter = currentStr;
-		}
-		int longerLength = longer.length();
-		if (longerLength == 0) {
-			return 1.0;
-		}
+		int targetLength = targetStr.length();
 		
 		int distance = 0;
 		
-		currentStr = currentStr.toLowerCase();
-		targetStr = targetStr.toLowerCase();
+		currentStr = currentStr.toLowerCase(new Locale("UTF-8"));
+		targetStr = targetStr.toLowerCase(new Locale("UTF-8"));
 
 		int[] costs = new int[targetStr.length() + 1];
 		for (int i = 0; i <= currentStr.length(); i++) {
@@ -179,7 +172,7 @@ public class SearchEngineServiceImpl implements ISearchEngineService {
 		
 		distance = costs[targetStr.length()];
 
-		ratio = (longerLength - distance) / (double) longerLength;
+		ratio = (targetLength - distance) / (double) targetLength;
 
 		logger.info("calculateSimilarityRatio method complated. Ratio:" + ratio);
 		return ratio;
