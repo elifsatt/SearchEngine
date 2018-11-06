@@ -17,6 +17,7 @@ public class CustomSearchResponseDTO implements Serializable {
 	private String htmlSnippet;
 	private String formattedUrl;
 	private String htmlFormattedUrl;
+	private long ratio;
 
 	public String getTitle() {
 		return title;
@@ -82,6 +83,14 @@ public class CustomSearchResponseDTO implements Serializable {
 		this.htmlFormattedUrl = htmlFormattedUrl;
 	}
 	
+	public long getRatio() {
+		return ratio;
+	}
+
+	public void setRatio(long l) {
+		this.ratio = l;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -92,6 +101,7 @@ public class CustomSearchResponseDTO implements Serializable {
 				.append("displayLink:").append(displayLink).append("\n")
 				.append("htmlSnippet:").append(htmlSnippet).append("\n")
 				.append("formattedUrl:").append(formattedUrl).append("\n")
+				.append("ratio:").append(ratio).append("\n")
 				.append("htmlFormattedUrl:").append(htmlFormattedUrl).append("\n\n\n");
 		
 		return builder.toString();

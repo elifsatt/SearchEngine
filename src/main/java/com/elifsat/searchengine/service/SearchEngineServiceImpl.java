@@ -14,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import com.elifsat.searchengine.dto.CustomSearchResponseDTO;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -21,66 +22,78 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service("seacrhEngineService")
 public class SearchEngineServiceImpl implements ISearchEngineService {
-	
+
 	private static final Logger logger = LogManager.getLogger(SearchEngineServiceImpl.class);
 
+	/**
+	 * Google Custom Search api cagrisinda kullanilan api key application.properties
+	 * dosyasından alinir
+	 */
 	@Value("${authentication.api.key}")
 	private String apiKey;
-	
+
 	@Value("${authentication.custom.search.engineKey}")
 	private String customSearchEngineKey;
-	
+
 	@Value("${authentication.search.url}")
 	private String searchURL;
-	
+
 	@Override
 	public List<CustomSearchResponseDTO> seacrh(String key) throws Exception {
 		logger.info("search method begins. Key:" + key);
-		 
-		List<CustomSearchResponseDTO> dtos =  null;
-		
+
+		List<CustomSearchResponseDTO> dtos = null;
+
 		try {
 			String searchKey = URLEncoder.encode(key, "UTF-8").replaceAll("\\+", "%20");
 
 			String url = buildSearchString(searchKey, 1, 10);
-			
+
 			String result = callGoogleCustomSearchApi(url);
-			
+
 			logger.info(result);
-			
+
 			dtos = convertJson2Object(result);
 			
+			if (!CollectionUtils.isEmpty(dtos)) {
+				for (CustomSearchResponseDTO customSearchResponseDTO : dtos) {
+					double ratio = calculateSimilarityRatio(key, customSearchResponseDTO.getHtmlSnippet());
+					
+					customSearchResponseDTO.setRatio(Math.round(ratio * 100));
+				}
+			}
+
 		} catch (Exception e) {
 			logger.error(e, e);
 		}
-		
-		
+
 		logger.info("search method complated.");
 		return dtos;
 	}
-	
-	private List<CustomSearchResponseDTO> convertJson2Object(String resultJson){
+
+	private List<CustomSearchResponseDTO> convertJson2Object(String resultJson) {
 		logger.info("convertJson2Object method begins.");
 		List<CustomSearchResponseDTO> dtos = new ArrayList<CustomSearchResponseDTO>();
-		
+
 		try {
-			
+
 			ObjectMapper mapper = new ObjectMapper();
-			
+
 			JSONObject jsonObject = new JSONObject(resultJson);
-			
+
 			Object itemsJSONObj = jsonObject.get("items");
-			
+
 			if (StringUtils.isNotBlank(itemsJSONObj.toString())) {
-				dtos = mapper.readValue(itemsJSONObj.toString(), new TypeReference<List<CustomSearchResponseDTO>>(){});
-				
+				dtos = mapper.readValue(itemsJSONObj.toString(), new TypeReference<List<CustomSearchResponseDTO>>() {
+				});
+
 				logger.info(dtos.toString());
 			}
-			
+
 		} catch (Exception e) {
-			logger.error(e,e);
+			logger.error(e, e);
 		}
-		
+
 		logger.info("convertJson2Object method begins.");
 		return dtos;
 	}
@@ -115,10 +128,87 @@ public class SearchEngineServiceImpl implements ISearchEngineService {
 		toSearch += "&start=" + start;
 
 		toSearch += "&num=" + numOfResults;
+		
+		toSearch += "&r=m&cx=007519843025510188404%3Alhku8uktzb0&client=google-coop&hl=tr&adsafe=low&type=0&pcsa=true&oe=UTF-8&ie=UTF-8&fexp=20606&format=p4&ad=p4&nocache=6931541534164139&num=0&output=uds_ads_only&source=gcsc&v=3&adext=as1%2Csr1&bsl=10&u_his=4&u_tz=180&dt=1541534164141&u_w=1920&u_h=1080&biw=1920&bih=150&psw=1904&psh=59&frm=0&uio=st16sd13sv13as1sl1sr1-&jsv=12107";
 
 		logger.info("Seacrh URL: " + toSearch);
-		
+
 		return toSearch;
+	}
+
+	@Override
+	public double calculateSimilarityRatio(String currentStr, String targetStr) {
+		logger.info("calculateSimilarityRatio method begins. currentStr:" + currentStr + " targetStr:" + targetStr);
+
+		double ratio = 0;
+
+		String longer = currentStr, shorter = targetStr;
+		if (currentStr.length() < targetStr.length()) { 
+			longer = targetStr;
+			shorter = currentStr;
+		}
+		int longerLength = longer.length();
+		if (longerLength == 0) {
+			return 1.0;
+		}
+		
+		int distance = 0;
+		
+		currentStr = currentStr.toLowerCase();
+		targetStr = targetStr.toLowerCase();
+
+		int[] costs = new int[targetStr.length() + 1];
+		for (int i = 0; i <= currentStr.length(); i++) {
+			int lastValue = i;
+			for (int j = 0; j <= targetStr.length(); j++) {
+				if (i == 0)
+					costs[j] = j;
+				else {
+					if (j > 0) {
+						int newValue = costs[j - 1];
+						if (currentStr.charAt(i - 1) != targetStr.charAt(j - 1))
+							newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+						costs[j - 1] = lastValue;
+						lastValue = newValue;
+					}
+				}
+			}
+			if (i > 0)
+				costs[targetStr.length()] = lastValue;
+		}
+		
+		distance = costs[targetStr.length()];
+
+		ratio = (longerLength - distance) / (double) longerLength;
+
+		logger.info("calculateSimilarityRatio method complated. Ratio:" + ratio);
+		return ratio;
+	}
+
+	public static int editDistance(String s1, String s2) {
+		s1 = s1.toLowerCase();
+		s2 = s2.toLowerCase();
+
+		int[] costs = new int[s2.length() + 1];
+		for (int i = 0; i <= s1.length(); i++) {
+			int lastValue = i;
+			for (int j = 0; j <= s2.length(); j++) {
+				if (i == 0)
+					costs[j] = j;
+				else {
+					if (j > 0) {
+						int newValue = costs[j - 1];
+						if (s1.charAt(i - 1) != s2.charAt(j - 1))
+							newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+						costs[j - 1] = lastValue;
+						lastValue = newValue;
+					}
+				}
+			}
+			if (i > 0)
+				costs[s2.length()] = lastValue;
+		}
+		return costs[s2.length()];
 	}
 
 }

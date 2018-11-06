@@ -152,6 +152,9 @@
 				
 				li = li + "<a href='" + searchList[i].link  + "'>" + searchList[i].htmlSnippet + "</a>";
 				
+				
+				li = li + "<span style='color: red; font-size: 20px; font-weight: bold;'> " + searchList[i].ratio + "</span>"
+				
 				li = li + '</li>';
 				$("#seacrhResult").append(li)
 			}
